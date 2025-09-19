@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Online Sederhana</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800">Toko Kita</h1>
+            <div class="relative">
+                <button id="cart-button" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.182 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </button>
+                <span id="cart-count" class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content - Product Grid -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <h2 class="text-4xl font-extrabold text-gray-900 mb-8 text-center">Produk Unggulan</h2>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Product cards will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-10">
+        <p>&copy; 2024 Toko Kita. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-[100]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 m-4 relative animate-fade-in-down">
+            <button id="close-cart-button" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 class="text-2xl font-bold mb-4">Keranjang Belanja</h3>
+            <div id="cart-items" class="max-h-80 overflow-y-auto mb-4">
+                <!-- Cart items will be rendered here -->
+            </div>
+            <div id="cart-empty-message" class="text-center text-gray-500 py-10 hidden">
+                Keranjang Anda kosong.
+            </div>
+            <div class="border-t pt-4 flex justify-between items-center">
+                <span class="text-lg font-bold">Total:</span>
+                <span id="cart-total" class="text-xl font-extrabold text-blue-600">Rp 0</span>
+            </div>
+            <button class="w-full bg-blue-600 text-white font-semibold py-3 mt-4 rounded-lg hover:bg-blue-700 transition-colors shadow-lg">Lanjutkan ke Pembayaran</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of products (data produk)
+        const products = [
+            {
+                id: 1,
+                name: "Laptop Super Cepat",
+                price: 15000000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Laptop",
+                description: "Laptop ringan dengan performa luar biasa untuk produktivitas."
+            },
+            {
+                id: 2,
+                name: "Smartphone Generasi Baru",
+                price: 8500000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Smartphone",
+                description: "Kamera canggih dan baterai tahan lama untuk gaya hidup modern."
+            },
+            {
+                id: 3,
+                name: "Headphone Nirkabel",
+                price: 1200000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Headphone",
+                description: "Kualitas audio premium dengan pembatalan kebisingan aktif."
+            },
+            {
+                id: 4,
+                name: "Smartwatch Multifungsi",
+                price: 2500000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Smartwatch",
+                description: "Lacak aktivitas harian dan notifikasi langsung di pergelangan tangan Anda."
+            },
+            {
+                id: 5,
+                name: "Keyboard Mekanik",
+                price: 950000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Keyboard",
+                description: "Rasakan pengalaman mengetik yang tak tertandingi dengan switch yang responsif."
+            },
+            {
+                id: 6,
+                name: "Mouse Gaming RGB",
+                price: 450000,
+                imageUrl: "https://placehold.co/400x300/F0F9FF/0E7490?text=Mouse",
+                description: "Kontrol presisi dan pencahayaan RGB yang dapat disesuaikan."
+            }
+        ];
+
+        let cart = [];
+
+        // DOM Elements
+        const productListEl = document.getElementById('product-list');
+        const cartButton = document.getElementById('cart-button');
+        const cartModal = document.getElementById('cart-modal');
+        const closeCartButton = document.getElementById('close-cart-button');
+        const cartItemsEl = document.getElementById('cart-items');
+        const cartTotalEl = document.getElementById('cart-total');
+        const cartCountEl = document.getElementById('cart-count');
+        const cartEmptyMessageEl = document.getElementById('cart-empty-message');
+
+        // Function to format price to Rupiah
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number);
+        };
+
+        // Function to render products on the page
+        const renderProducts = () => {
+            productListEl.innerHTML = ''; // Clear previous products
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.classList.add('bg-white', 'p-6', 'rounded-xl', 'shadow-md', 'hover:shadow-xl', 'transition-shadow', 'duration-300', 'flex', 'flex-col', 'items-center', 'text-center');
+
+                productCard.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.name}" class="rounded-lg mb-4 w-full h-40 object-cover shadow-sm">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">${product.name}</h3>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">${product.description}</p>
+                    <span class="text-2xl font-bold text-blue-600 mb-4">${formatRupiah(product.price)}</span>
+                    <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-md transform hover:scale-105" data-id="${product.id}">
+                        Tambah ke Keranjang
+                    </button>
+                `;
+                productListEl.appendChild(productCard);
+            });
+        };
+
+        // Function to render cart items
+        const renderCart = () => {
+            cartItemsEl.innerHTML = ''; // Clear previous cart items
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartEmptyMessageEl.classList.remove('hidden');
+                cartItemsEl.classList.add('hidden');
+            } else {
+                cartEmptyMessageEl.classList.add('hidden');
+                cartItemsEl.classList.remove('hidden');
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    total += product.price * item.quantity;
+
+                    const cartItemEl = document.createElement('div');
+                    cartItemEl.classList.add('flex', 'items-center', 'justify-between', 'border-b', 'pb-4', 'mb-4');
+                    cartItemEl.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <img src="${product.imageUrl}" alt="${product.name}" class="w-16 h-16 rounded-lg object-cover shadow-sm">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${product.name}</h4>
+                                <span class="text-sm text-gray-500">Jumlah: ${item.quantity}</span>
+                                <p class="text-blue-600 font-bold">${formatRupiah(product.price * item.quantity)}</p>
+                            </div>
+                        </div>
+                        <button class="remove-from-cart-btn text-red-500 hover:text-red-700 transition-colors" data-id="${item.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    `;
+                    cartItemsEl.appendChild(cartItemEl);
+                });
+            }
+
+            cartTotalEl.textContent = formatRupiah(total);
+            cartCountEl.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+        };
+
+        // Function to add a product to the cart
+        const addToCart = (productId) => {
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+            renderCart();
+        };
+
+        // Function to remove a product from the cart
+        const removeFromCart = (productId) => {
+            const itemIndex = cart.findIndex(item => item.id === productId);
+            if (itemIndex > -1) {
+                cart.splice(itemIndex, 1);
+            }
+            renderCart();
+        };
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            renderCart();
+        });
+
+        // Add to cart button listener
+        productListEl.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const productId = parseInt(e.target.dataset.id);
+                addToCart(productId);
+            }
+        });
+
+        // Remove from cart button listener
+        cartItemsEl.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-from-cart-btn')) {
+                const productId = parseInt(e.target.closest('.remove-from-cart-btn').dataset.id);
+                removeFromCart(productId);
+            }
+        });
+
+        // Open/Close Cart Modal
+        cartButton.addEventListener('click', () => {
+            cartModal.classList.remove('hidden');
+        });
+
+        closeCartButton.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        cartModal.addEventListener('click', (e) => {
+            if (e.target === cartModal) {
+                cartModal.classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
